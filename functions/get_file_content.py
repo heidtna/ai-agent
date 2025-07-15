@@ -11,8 +11,11 @@ def get_file_content(working_directory, file_path):
     if os.path.isdir(abspath):
         return f'Error: File not found or is not a regular file: "{file_path}"'
     
-    with open(abspath, "r") as f:
-        content_string = f.read(READ_FILE_MAX_CHAR)
+    try:
+        with open(abspath, "r") as f:
+            content_string = f.read(READ_FILE_MAX_CHAR)
+    except FileNotFoundError as e:
+        return f'Error: {e}'
     
     if len(content_string) == READ_FILE_MAX_CHAR:
         content_string = content_string[:-1] 

@@ -32,30 +32,30 @@ class TestGetFileInfo(unittest.TestCase):
         # print("Result for '../' directory:")
         # print(result)
 
-    def test_lorem_ipsum(self):
+    def test_lorem_ipsum_shouldMeetCharLimit(self):
         result = get_file_content("calculator", "lorem.txt")
         self.assertLess(len(result), 10100)
         # print(result)
 
     def test_get_file_contents_main_shouldSucceed(self):
         result = get_file_content("calculator", "main.py")
-        self.assertIn("def main():", result)
+        self.assertIn("def main():", result, "File did not contain expected contents")
         #print(result)
 
     def test_get_file_contents_pkgcalculator_shouldSucceed(self):
         result = get_file_content("calculator", "pkg/calculator.py")
-        self.assertIn("def _apply_operator", result)
+        self.assertIn("def _apply_operator", result, "File did not contain expected contents")
         #print(result)
 
     def test_get_file_contents_bin_shouldError(self):
         result = get_file_content("calculator", "/bin")
-        self.assertIn("Error:", result)
+        self.assertIn("outside the permitted working directory", result, "Method did not return expected error")
         #print(result)
 
     def test_get_file_contents_pkg_shouldError(self):
-        result = get_file_content("calculator", "pkg")
-        self.assertIn("Error:", result)
-        #print(result)
+        result = get_file_content("calculator", "pkg/does_not_exist.py")
+        self.assertIn("No such file or directory", result, "Method did not return expected error")
+        print(result)
 
 if __name__ == "__main__":
     unittest.main()
