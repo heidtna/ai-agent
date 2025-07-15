@@ -2,6 +2,19 @@ import os
 from config import *
 
 def get_file_content(working_directory, file_path):
+    """
+    Accepts a working directory and path to a file then reads the content 
+    and returns a string of those contents up to a maximum character limit.
+
+    Args: 
+        working_directory (str): The base directory acting as the root.
+        directory (str, optional): Relative path to target file within 'working_directory'.
+        MUST BE INSIDE OF 'working_directory'.
+
+    Returns:
+        String representing the contents of the file.
+    """
+    
     abspath = os.path.abspath(
         os.path.join(working_directory, file_path)
     )
