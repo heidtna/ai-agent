@@ -1,6 +1,7 @@
 import unittest
 from functions.get_files_info import get_files_info
 from functions.get_file_content import get_file_content
+from functions.write_file import write_file
 
 
 class TestGetFileInfo(unittest.TestCase):
@@ -79,6 +80,34 @@ class TestGetFileInfo(unittest.TestCase):
     def test_get_file_contents_pkg_shouldError(self):
         result = get_file_content("calculator", "pkg/does_not_exist.py")
         self.assertIn("No such file or directory", result, "Method did not return expected error")
+
+        # Print for course assignments
+        # TODO: Remove after completing scripted project
+        #print(result)
+
+    @unittest.skip("Skip this test because it will permanently change file contents.")
+    #TODO: Update this test later to reset file and verify new contents.
+    def test_write_to_exiting_file_shouldSucceed(self):
+        result = write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")
+        self.assertIn("File successfully overwritten", result, "Method did not return expected result")
+        
+        # Print for course assignments
+        # TODO: Remove after completing scripted project
+        #print(result)
+
+    @unittest.skip("Skip this test because it will fail successive runs if file isn't first deleted.")
+    #TODO: Update this test later to handle successive runs.
+    def test_create_and_write_new_file_shouldSucceed(self):
+        result = write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet")
+        self.assertIn("File successfully created", result, "Method did not return expected result")
+        
+        # Print for course assignments
+        # TODO: Remove after completing scripted project
+        #print(result)
+
+    def test_write_to_file_outside_working_directory_shouldError(self):
+        result = write_file("calculator", "/tmp/temp.txt", "this should not be allowed")
+        self.assertIn("outside the permitted working directory", result, "Method did not return expected error")
 
         # Print for course assignments
         # TODO: Remove after completing scripted project
