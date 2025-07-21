@@ -3,6 +3,8 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from config import SYSTEM_PROMPT
+from functions.declarations import available_functions
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -35,10 +37,21 @@ def main():
     client = genai.Client(api_key=api_key)
     res = client.models.generate_content(
         model="gemini-2.0-flash-001", 
-        contents=messages)
+        contents=messages,
+        config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=SYSTEM_PROMPT)
+    )
 
-    # Print response (and optionally additional prompt data)
-    print(res.text)
+    if res.function_calls:
+        print("PROGRAM MADE FUNCTION CALLS")
+
+        for call in res.function_calls:
+            print(f'Calling function: {call.name}({call.args})')
+    else:
+        print("NO CALLS MADE")
+
+        # Print response (and optionally additional prompt data)
+        print(res.text)
 
     if is_verbose:
         print(f"User prompt: {user_prompt}")
