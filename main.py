@@ -5,6 +5,7 @@ from google import genai
 from google.genai import types
 from config import SYSTEM_PROMPT
 from functions.declarations import available_functions
+from functions.call_function import call_function
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -45,18 +46,22 @@ def main():
     if res.function_calls:
         print("PROGRAM MADE FUNCTION CALLS")
 
-        for call in res.function_calls:
-            print(f'Calling function: {call.name}({call.args})')
+        for function_call in res.function_calls:
+            try:
+                return_content = call_function(function_call, is_verbose)
+                response = return_content.parts[0].function_response.response
+                print(f"-> {response}")
+            except Exception as e:
+                print(f"Error: Calling function '{function_call.name}' failed.\n  --{e}")
     else:
         print("NO CALLS MADE")
-
-        # Print response (and optionally additional prompt data)
         print(res.text)
 
     if is_verbose:
-        print(f"User prompt: {user_prompt}")
-        print(f"Prompt tokens: {res.usage_metadata.prompt_token_count}")
-        print(f"Response tokens: {res.usage_metadata.candidates_token_count}")
+        print("\nAdditional information:")
+        print(f"\tUser prompt: {user_prompt}")
+        print(f"\tPrompt tokens: {res.usage_metadata.prompt_token_count}")
+        print(f"\tResponse tokens: {res.usage_metadata.candidates_token_count}")
 
 if __name__ == "__main__":
     main()

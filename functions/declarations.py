@@ -42,7 +42,7 @@ schema_run_python_file = types.FunctionDeclaration(
             "args": types.Schema(
                 type=types.Type.ARRAY,
                 items=types.Schema(type=types.Type.STRING), # Need this to keep LLM from complaining about not being given params.
-                description="An array of optional string parameters. If not provided, default to None."
+                description="An array of optional string parameters. If not provided, don't ask for them - just run the code without additional parameters."
             )
         },
         required=["file_path"], # This probably helps, too.

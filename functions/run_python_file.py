@@ -20,7 +20,7 @@ def run_python_file(working_directory, file_path, args=[]):
     """
     abspath = os.path.abspath(
         os.path.join(working_directory, file_path)
-    )
+    )    
 
     # Perform checks to ensure the file exists, is within working_directory, and is a Python file
     if working_directory not in abspath:
