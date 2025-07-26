@@ -26,18 +26,23 @@ This project was made using the 'uv' Python package manager.
    source .venv/bin/activate
    ```
 
-3. **Set up environment variables**  
+3. **Install dependencies**
+   ```sh
+   uv pip install -r requirements.txt
+   ```
+
+4. **Set up environment variables**  
    Create a `.env` file with your Gemini API key:
    ```
    GEMINI_API_KEY=your_api_key_here
    ```
 
-4. **Run the main agent**  
+5. **Run the main agent**  
    ```sh
    python main.py "<your prompt here>"
    ```
 
-5. **Run tests**  
+6. **Run tests**  
    ```sh
    python -m unittest tests.py
    ```
