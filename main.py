@@ -3,65 +3,98 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from config import SYSTEM_PROMPT
+from config import SYSTEM_PROMPT, MAX_ITERATIONS
 from functions.declarations import available_functions
 from functions.call_function import call_function
 
-load_dotenv()
-api_key = os.environ.get("GEMINI_API_KEY")
-
 def main():
+    load_dotenv()
+
     # Get prompt arguments and return error if empty or more than 2
-    args = sys.argv
-    if len(args) == 1: 
-        print("No arguments given. Enter a prompt to get a response.")
-        exit(1)
-    elif len(args) > 3:
-        print(f"Too many arguments given. Program expects at most 2 parameters, but was given {len(args) - 1}")
-        exit(1)
-    elif args[1] == "--verbose":
-        print("Optional flag 'verbose' should be set last.")
-        print("Enter command as:\n")
-        print("'uv run main.py <prompt> <flag>'\n")
-        exit(1)
+    args = []
+    for arg in sys.argv[1:]:
+        if not arg.startswith("--"):
+            args.append(arg)
+
+    if not args:
+        print("AI Code Assistant")
+        print('\nUsage: python main.py "your prompt here" [--verbose]')
+        print('Example: python main.py "How do I fix the calculator?"')
+        sys.exit(1)
 
     # Check if 'verbose' flag is set
-    is_verbose = True if sys.argv[-1] == "--verbose" else False
-    
-    # Store prompt in content list to track conversation
-    user_prompt = args[1]
+    is_verbose = "--verbose" in sys.argv
+
+    user_prompt = " ".join(args)
+
+    if is_verbose:
+        print("User Prompt: ", user_prompt)
+
     messages = [
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
     # Send content list to AI API and store response
+    api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
-    res = client.models.generate_content(
+
+    iterations = 0
+    while True:
+        iterations += 1
+        
+        if iterations > MAX_ITERATIONS:
+            print(f"Maximum number of {MAX_ITERATIONS} reached. Terminating program.")
+            sys.exit(1)
+
+        try:
+            final_response = generate_content(client, messages, is_verbose)
+
+            if final_response:
+                print("\n*** Final Response ***\n", final_response)
+                break
+        except Exception as e:
+            print(f"Error: Content generation failed.\n  <{e}>")    
+
+def generate_content(client, messages, is_verbose):
+    response = client.models.generate_content(
         model="gemini-2.0-flash-001", 
         contents=messages,
         config=types.GenerateContentConfig(
             tools=[available_functions], system_instruction=SYSTEM_PROMPT)
     )
 
-    if res.function_calls:
-        print("PROGRAM MADE FUNCTION CALLS")
-
-        for function_call in res.function_calls:
-            try:
-                return_content = call_function(function_call, is_verbose)
-                response = return_content.parts[0].function_response.response
-                print(f"-> {response}")
-            except Exception as e:
-                print(f"Error: Calling function '{function_call.name}' failed.\n  --{e}")
-    else:
-        print("NO CALLS MADE")
-        print(res.text)
-
     if is_verbose:
-        print("\nAdditional information:")
-        print(f"\tUser prompt: {user_prompt}")
-        print(f"\tPrompt tokens: {res.usage_metadata.prompt_token_count}")
-        print(f"\tResponse tokens: {res.usage_metadata.candidates_token_count}")
+        print(f"\tPrompt tokens: {response.usage_metadata.prompt_token_count}")
+        print(f"\tResponse tokens: {response.usage_metadata.candidates_token_count}")
+
+    if response.candidates:
+        for candidate in response.candidates:
+            function_content = candidate.content
+            messages.append(function_content)
+
+    # End conversation when program no longer needs to make specific function calls
+    if not response.function_calls:
+        return response.text
+    
+    function_call_responses = []
+    for function_call in response.function_calls:
+        try:
+            function_call_result = call_function(function_call, is_verbose)
+            function_call_response = function_call_result.parts[0].function_response.response
+
+            if is_verbose:
+                print(f"--> Function call results:\n{function_call_response["result"]}")
+
+            function_call_responses.append(function_call_result.parts[0])
+
+        except Exception as e:
+            print(f"Error: Calling function '{function_call.name}' failed.\n  <{e}>")
+
+    if not function_call_responses:
+        raise Exception("No function response generated, exiting.")
+    
+    messages.append(types.Content(role="tool", parts=function_call_responses))
+        
 
 if __name__ == "__main__":
     main()

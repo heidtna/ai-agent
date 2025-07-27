@@ -31,6 +31,6 @@ def get_files_info(working_directory, directory="."):
     for content in contents:
         size = os.path.getsize(abspath)
         isfile = os.path.isfile(content)
-        output.append(f"- {content}: file_size={size} bytes, is_dir={isfile}")
+        output.append(f"\t- {content}: file_size={size} bytes, is_dir={isfile}")
     
     return "\n".join(output)

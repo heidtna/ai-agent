@@ -15,3 +15,6 @@ If no additional arguments are provided when asked to execute a python file, do 
 
 # 'Read File' variables
 READ_FILE_MAX_CHAR = 10001
+
+# Individual prompt variables
+MAX_ITERATIONS = 20
